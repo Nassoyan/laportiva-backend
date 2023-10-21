@@ -1,0 +1,24 @@
+{
+    "development": {
+      "username": "postgres",
+      "password": "asdasd",
+      "database": "laportiva",
+      "host": "localhost",
+      "dialect": "postgres"
+    },
+    "test": {
+      "username": "postgres",
+      "password": "asdasd",
+      "database": "laportiva",
+      "host": "localhost",
+      "dialect": "postgres"
+    },
+    "production": {
+      "username": "postgres",
+      "password": "asdasd",
+      "database": "laportiva",
+      "host": "localhost",
+      "dialect": "postgres"
+    }
+  }
+  
