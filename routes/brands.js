@@ -35,7 +35,6 @@ router.post('/', async (req, res) => {
 
 
             fs.rename(oldPath, newPath, async (err) => {
-                console.log(newPath, "newpath");
                 if (err) {
                     console.error('Error while parsing form:', err);
                     return res.status(500).json({ error: 'Internal Server Error' });
@@ -45,10 +44,9 @@ router.post('/', async (req, res) => {
 
 
                 const imagePath = newPath.substring(newPath.indexOf('/laportiva_backend')); // Assuming the key is 'image'
-                const image_url = baseURL + imagePath;
-                console.log(image_url, "imagePath");
+                const imageUrl = baseURL + imagePath;
 
-                const newBrand = await Brands.create({ name:firstName, image_url: image_url });
+                const newBrand = await Brands.create({ name:firstName, image_url: imageUrl});
 
                 res.json(newBrand);
             })
