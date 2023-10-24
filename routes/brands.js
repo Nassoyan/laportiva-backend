@@ -21,6 +21,18 @@ router.get('/', async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
+router.get('/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    const brand = await Brands.findOne({ where: {
+        id: id 
+    } });
+    res.json(brand);
+  } catch (error) {
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 
 
 router.post('/', async (req, res) => {
@@ -50,57 +62,26 @@ router.post('/', async (req, res) => {
 
 
 
-
-// router.post('/', async (req, res) => {
-//     try {
-//         const form = new formidable.IncomingForm();
-//         form.parse(req, async (err, fields, files) => {
-//             const oldPath = files.image[0].filepath;
-
-//             const newName = Date.now() + '-' + files.image[0].originalFilename;
-//             const newPath = path.join('public/images', newName);
-
-//             const uploadDir = path.join(__dirname, '..', 'public/images');
-//             if (!fs.existsSync(uploadDir, "uploadDir")) {
-//                 fs.mkdirSync(uploadDir);
-//             }
-
-
-//             fs.rename(oldPath, newPath, async (err) => {
-//                 if (err) {
-//                     console.error('Error while parsing form:', err);
-//                     return res.status(500).json({ error: 'Internal Server Error' });
-//                 }
-//                 const { name } = fields;
-//                 const firstName = name[0];
-
-
-//                 const imagePath = newPath.substring(newPath.indexOf('/laportiva_backend')); // Assuming the key is 'image'
-//                 const imageUrl = baseURL + imagePath;
-
-//                 const newBrand = await Brands.create({ name:firstName, image_url: imageUrl});
-
-//                 res.json(newBrand);
-//             })
-
-//         });
-//     } catch (error) {
-//         console.error("Error:", error);
-//         res.status(500).json({ error: 'Internal Server Error' });
-//     }
-// });
-
-
 router.put('/:id', async (req, res) => {
     try {
-        const updatedBrand = await Brands.findByIdAndUpdate(req.params.id, req.body, { new: true }); 
-        
-        res.json(updatedBrand);
+        const brandId = req.params.id;
+        const { name } = req.body;
+
+        const updatedBrand = await Brands.findByPk(brandId);
+
+        if (updatedBrand) {
+            updatedBrand.name = name;
+            await updatedBrand.save();
+            res.json(updatedBrand);
+        } else {
+            res.status(404).json({ error: 'Brand not found' });
+        }
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
+
 
 
 router.delete('/:id', async (req, res) => {
