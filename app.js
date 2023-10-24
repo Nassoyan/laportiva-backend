@@ -18,7 +18,7 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use('/public',express.static(path.join(__dirname, 'public')));console.log(path.join(__dirname, 'public'));
+app.use('/public',express.static(path.join(__dirname, 'public')));
 
 app.use('/brands', brandsRouter);
 app.use('/products', productsRouter);
