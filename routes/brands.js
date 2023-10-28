@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const client = require("../bin/config/database");
-const formidable = require('formidable');
+// const formidable = require('formidable');
 const path = require('path');
 const fs = require("fs");
 const fileUpload = require('express-fileupload');
@@ -24,9 +24,11 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const id = req.params.id;
-    const brand = await Brands.findOne({ where: {
-        id: id 
-    } });
+    const brand = await Brands.findOne({ 
+        where: {
+          id: id 
+                 } 
+});
     res.json(brand);
   } catch (error) {
     res.status(500).json({ error: 'Internal Server Error' });
@@ -47,6 +49,7 @@ router.post('/', async (req, res) => {
         const brandFile = Date.now() + '-' + req.files.image.name;
         const uploadPath = path.join('public/images', brandFile);
         const imageUrl = baseURL + uploadPath
+        console.log(imageUrl);
 
         const brandName = req.body.name;
         

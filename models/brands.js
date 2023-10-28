@@ -7,18 +7,18 @@ const Product = require("./products")
 
 const Brand = sequelize.define('brands', {
     id: {
-        // allowNull: false,
+        allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
     name: {
         type: Sequelize.STRING,
-        // allowNull: false,
+        allowNull: false,
     },
     image_url: {
         type: Sequelize.TEXT,
-        // allowNull: false,
+        allowNull: false,
     },
 }, {
   timestamps: true, // Set timestamps to true to enable automatic createdAt and updatedAt columns

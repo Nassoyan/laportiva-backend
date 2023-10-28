@@ -29,6 +29,10 @@ const Product = sequelize.define('products', {
         type: Sequelize.INTEGER,
         allowNull: false
     },
+    brand_id: {
+        type: Sequelize.INTEGER,
+        allowNull: false
+    },
 }, {
     timestamps: true,
     underscored:true
