@@ -1,8 +1,5 @@
-const { Sequelize, DataTypes } = require('sequelize');
-const sequelize = new Sequelize('laportiva', 'postgres', 'asdasd', {
-  host: 'localhost',
-  dialect: 'postgres', // Replace with your database dialect
-});
+const { Sequelize,  DataTypes } = require('sequelize');
+const { sequelize } = require("../bin/config/database"); 
 const Product = require("./products")
 
 const Brand = sequelize.define('brands', {

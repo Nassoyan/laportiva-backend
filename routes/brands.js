@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const client = require("../bin/config/database");
-// const formidable = require('formidable');
 const path = require('path');
 const fs = require("fs");
 const fileUpload = require('express-fileupload');
@@ -18,6 +17,7 @@ router.get('/', async (req, res) => {
         const brands = await Brands.findAll(); 
         res.json(brands);
     } catch (error) {
+        console.log(error.message);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
@@ -27,7 +27,7 @@ router.get('/:id', async (req, res) => {
     const brand = await Brands.findOne({ 
         where: {
           id: id 
-                 } 
+        } 
 });
     res.json(brand);
   } catch (error) {

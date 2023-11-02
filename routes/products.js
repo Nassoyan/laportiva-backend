@@ -20,9 +20,24 @@ router.get("/", async (req, res) => {
         })
         res.json(products)
     } catch (error) {
+        console.log(error.message);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
+
+router.get("/:id", async(req, res) => {
+    try{
+        const id = req.params.id
+        const product = await Products.findOne({
+            where: {
+                id:id
+            }
+        })
+        res.json(product)
+    } catch(err) {
+        console.error(err)
+    }
+})
 
 router.post('/', async (req, res) => {
     try {
@@ -32,14 +47,14 @@ router.post('/', async (req, res) => {
         if (!fs.existsSync(path.join('public', 'productImages'))) {
             fs.mkdirSync(path.join('public', 'productImages'), { recursive: true });
         }
-        
+
         const productFile = Date.now() + '-' + req.files.product_images.name;
         const uploadPath = path.join('public/productImages', productFile);
         const imageUrl = baseURL + uploadPath;
 
         const { name, price, artikul, code, brand_id } = req.body;
         await req.files.product_images.mv(uploadPath);
-        console.log(imageUrl);
+        console.log(imageUrl, "hohoooo");
         const newProduct = await Products.create({ name, price, artikul, code, brand_id });
         const newProductImage = await Image.create({ image_url: imageUrl, product_id: newProduct.id });
 

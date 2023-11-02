@@ -1,8 +1,5 @@
 const { Sequelize, DataTypes } = require('sequelize');
-const sequelize = new Sequelize('laportiva', 'postgres', 'asdasd', {
-  host: 'localhost',
-  dialect: 'postgres', // Replace with your database dialect
-});
+const { sequelize } = require('../bin/config/database')
 
 const Image = sequelize.define('product_images', {
   image_url: {
