@@ -1,10 +1,7 @@
 // models/product.js
 const { Sequelize, DataTypes } = require('sequelize');
 const Image = require('./productImages');
-const sequelize = new Sequelize('laportiva', 'postgres', 'asdasd', {
-  host: 'localhost',
-  dialect: 'postgres', // Replace with your database dialect
-});
+const { sequelize } = require('../bin/config/database')
 
 const Product = sequelize.define('products', {
     id: {
@@ -26,6 +23,10 @@ const Product = sequelize.define('products', {
         allowNull: false
       },
     code: {
+        type: Sequelize.INTEGER,
+        allowNull: false
+    },
+    brand_id: {
         type: Sequelize.INTEGER,
         allowNull: false
     },
