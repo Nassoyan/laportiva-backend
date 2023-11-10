@@ -10,24 +10,25 @@ const baseURL = 'http://localhost:3000/';
 
 const Products = require("../models/products"); 
 const Image = require('../models/productImages');
+const { deleteImageFromProductsFolder } = require('../utils/productHelper')
 
 const {sequelize} = require('../bin/config/database')
 const rootDirectory = path.join(__dirname, '../');
 
+
 router.use(express.json())
 
 router.get("/", async (req, res) => {
-    console.log("mtav");
     try {
-         const page = parseInt(req.query.page) || 1; // Default to page 1 if not provided
-         const limit = parseInt(req.query.size) || 10; // Default to 10 items per page if not provided
+         const page = parseInt(req.query.page) || 1;
+         const limit = parseInt(req.query.size) || 10; 
 
-        const offset = (page - 1) * limit; // Calculate the offset correctly
+        const offset = (page - 1) * limit;
 
         const products = await Products.findAndCountAll({
             include: [{ model: Image, as: 'images' }],
-            limit: limit,
-            offset: offset,
+            limit,
+            offset,
         });
 
         const totalPages = Math.ceil(products.count / limit);
@@ -84,7 +85,7 @@ router.post('/', async (req, res) => {
     } catch (err) {
         await t.rollback()
         console.error("Error:", err);
-        res.status(500).send(err);
+        res.status(500).send("Failed to add a product");
     }
 });
 
@@ -106,38 +107,22 @@ router.put('/:id', async (req, res) => {
 
 router.delete('/:id', async (req, res) => {
     try {
-
-        const productImage = await Image.findByPk(req.params.id); // Find the product by its id
+        const productImage = await Image.findByPk(req.params.id); 
         if (!productImage) {
             return res.status(404).json({ error: 'Product not found' });
         }
+        await deleteImageFromProductsFolder(rootDirectory, productImage)
+
+        const product = await Products.findByPk(req.params.id); 
         
-        const imagePath = productImage.image_url;
-        const parsedUrl = new URL(imagePath);
+        await product.destroy();
 
-        const absolutePath = path.join(rootDirectory, parsedUrl.pathname);
-
-        await fs.promises.unlink(absolutePath);
-
-        await Products.destroy({
-            where: {
-              id:req.params.id
-            },
-            // truncate:true,
-            // restartIdentity:true
-          });
-          await Image.destroy({ 
-              where: { 
-                  product_id: req.params.id 
-                } ,
-            }); // Delete the image entry from the Image table
-
-        
         res.json({ message: 'Product deleted successfully' });
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
+
 
 module.exports = router

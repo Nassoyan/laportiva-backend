@@ -9,6 +9,10 @@ router.use(fileUpload());
 const baseURL = 'http://localhost:3000/';
 
 const Brands = require("../models/brands"); 
+const { deleteImageFromBrandFolder } = require('../utils/brandHelper')
+
+const rootDirectory = path.join(__dirname, '../');
+
 
 router.use(express.json());
 
@@ -42,12 +46,12 @@ router.post('/', async (req, res) => {
         if (!req.files || Object.keys(req.files).length === 0) {
             return res.status(400).send('No files were uploaded.');
         }
-        if (!fs.existsSync(path.join('public', 'images'))) {
-            fs.mkdirSync(path.join('public', 'images'), { recursive: true });
+        if (!fs.existsSync(path.join('public', 'brandImages'))) {
+            fs.mkdirSync(path.join('public', 'brandImages'), { recursive: true });
           }
 
         const brandFile = Date.now() + '-' + req.files.image.name;
-        const uploadPath = path.join('public/images', brandFile);
+        const uploadPath = path.join('public/brandImages', brandFile);
         const imageUrl = baseURL + uploadPath
         console.log(imageUrl);
 
@@ -89,6 +93,15 @@ router.put('/:id', async (req, res) => {
 
 router.delete('/:id', async (req, res) => {
     try {
+        const brandImage = await Brands.findByPk(req.params.id)
+        if (!brandImage) {
+            return res.status(404).json({ error: 'Brand not found' });
+        }
+
+        await deleteImageFromBrandFolder(rootDirectory, brandImage)
+
+        console.log(brandImage, "brandImage");
+
         await Brands.destroy({
             where: {
                 id: req.params.id
