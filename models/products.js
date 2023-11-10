@@ -36,6 +36,6 @@ const Product = sequelize.define('products', {
      // Set timestamps to true to enable automatic createdAt and updatedAt columns
   });
 
-Product.hasMany(Image, { as: 'images', foreignKey: "product_id", }); // Define the one-to-many relationship
+Product.hasMany(Image, { as: 'images', foreignKey: "product_id", onDelete: 'cascade', hooks: true});
 
 module.exports = Product;

@@ -5,6 +5,8 @@ var logger = require('morgan');
 const cors = require('cors');
 
 
+
+
 const brandsRouter   = require('./routes/brands')
 const productsRouter = require('./routes/products')
 
@@ -12,7 +14,6 @@ const productsRouter = require('./routes/products')
 var app = express();
 
 app.use(cors());
-
 
 app.use(logger('dev'));
 app.use(express.json());
