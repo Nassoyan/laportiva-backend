@@ -5,11 +5,13 @@ const path = require('path');
 const fs = require("fs");
 const fileUpload = require('express-fileupload');
 router.use(fileUpload());
+const { validateProduct, checkValidationResult } = require('../utils/brands/validation');
+
 
 const baseURL = 'http://localhost:3000/';
 
 const Brands = require("../models/brands"); 
-const { deleteImageFromBrandFolder } = require('../utils/brandHelper')
+const { deleteImageFromBrandFolder } = require('../utils/brands/brandHelper')
 
 const rootDirectory = path.join(__dirname, '../');
 
@@ -41,7 +43,8 @@ router.get('/:id', async (req, res) => {
 
 
 
-router.post('/', async (req, res) => {
+router.post('/', validateProduct, checkValidationResult, async (req, res) => {
+
     try {
         if (!req.files || Object.keys(req.files).length === 0) {
             return res.status(400).send('No files were uploaded.');

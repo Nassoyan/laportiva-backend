@@ -6,11 +6,12 @@ const path = require('path');
 const fs = require("fs");
 const fileUpload = require('express-fileupload');
 router.use(fileUpload());
+const { validateProduct, checkValidationResult } = require('../utils/products/validation');
 const baseURL = 'http://localhost:3000/';
 
 const Products = require("../models/products"); 
 const Image = require('../models/productImages');
-const { deleteImageFromProductsFolder } = require('../utils/productHelper')
+const { deleteImageFromProductsFolder } = require('../utils/products/productHelper')
 
 const {sequelize} = require('../bin/config/database')
 const rootDirectory = path.join(__dirname, '../');
@@ -59,11 +60,15 @@ router.get("/:id", async(req, res) => {
     }
 })
 
-router.post('/', async (req, res) => {
+router.post('/',validateProduct, checkValidationResult, async (req, res) => {
+
+ 
+
     const t = await sequelize.transaction()
+    
     try {
         if (!req.files || Object.keys(req.files).length === 0) {
-            return res.status(400).send('No files were uploaded.');
+            return res.status(400).send('image is required!!!.');
         }
         if (!fs.existsSync(path.join('public', 'productImages'))) {
             fs.mkdirSync(path.join('public', 'productImages'), { recursive: true });
@@ -111,6 +116,7 @@ router.delete('/:id', async (req, res) => {
         if (!productImage) {
             return res.status(404).json({ error: 'Product not found' });
         }
+        console.log(productImage, "productImageeee");
         await deleteImageFromProductsFolder(rootDirectory, productImage)
 
         const product = await Products.findByPk(req.params.id); 

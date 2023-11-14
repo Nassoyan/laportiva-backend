@@ -32,7 +32,7 @@ module.exports = {
   },
 
   down: async (queryInterface, seq) => {
-    return queryInterface.bulkDelete('Schede', null, { truncate: true, cascade: true })
+    await queryInterface.dropTable('brands')
   }
 };
 

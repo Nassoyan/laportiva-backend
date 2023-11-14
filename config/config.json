@@ -1,0 +1,28 @@
+{
+  "development": {
+    "username": "postgres",
+    "password": "asdasd",
+    "database": "laportiv",
+    "host": "localhost",
+    "dialect": "postgres",
+    "port":"5433"
+  },
+  "test": {
+    "username": "postgres",
+    "password": "asdasd",
+    "database": "laportiv",
+    "host": "localhost",
+    "dialect": "postgres",
+    "port":"5433"
+
+  },
+  "production": {
+    "username": "postgres",
+    "password": "asdasd",
+    "database": "laportiv",
+    "host": "localhost",
+    "dialect": "postgres",
+    "port":"5433"
+
+  }
+}

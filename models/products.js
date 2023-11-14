@@ -19,11 +19,11 @@ const Product = sequelize.define('products', {
         allowNull: false,
     },
     artikul: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.STRING,
         allowNull: false
       },
     code: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.STRING,
         allowNull: false
     },
     brand_id: {
