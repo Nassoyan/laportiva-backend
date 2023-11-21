@@ -5,7 +5,7 @@ const path = require('path');
 const fs = require("fs");
 const fileUpload = require('express-fileupload');
 router.use(fileUpload());
-const { validateProduct, checkValidationResult } = require('../utils/brands/validation');
+const { validateProduct, checkValidationResult } = require('../validations/brands/validation');
 
 
 const baseURL = 'http://localhost:3000/';
