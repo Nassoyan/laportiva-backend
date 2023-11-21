@@ -6,9 +6,10 @@ const fs = require("fs");
 const fileUpload = require('express-fileupload');
 router.use(fileUpload());
 const { validateProduct, checkValidationResult } = require('../validations/brands/validation');
+require('dotenv').config()
 
 
-const baseURL = 'http://localhost:3000/';
+const baseURL = process.env.DB_URL;
 
 const Brands = require("../models/brands"); 
 const { deleteImageFromBrandFolder } = require('../utils/brands/brandHelper')

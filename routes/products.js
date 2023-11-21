@@ -2,12 +2,14 @@ const express = require("express");
 const router = express.Router();
 const client = require("../bin/config/database");
 const path = require('path');
+require('dotenv').config()
+
 
 const fs = require("fs");
 const fileUpload = require('express-fileupload');
 router.use(fileUpload());
 const { validateProduct, checkValidationResult } = require('../validations/products/validation');
-const baseURL = 'http://localhost:3000/';
+const baseURL = process.env.DB_URL;
 
 const Products = require("../models/products"); 
 const Image = require('../models/productImages');
