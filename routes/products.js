@@ -2,18 +2,22 @@ const express = require("express");
 const router = express.Router();
 const client = require("../bin/config/database");
 const path = require('path');
+require('dotenv').config()
+
 
 const fs = require("fs");
 const fileUpload = require('express-fileupload');
 router.use(fileUpload());
-const { validateProduct, checkValidationResult } = require('../utils/products/validation');
-const baseURL = 'http://localhost:3000/';
+const { validateProduct, checkValidationResult } = require('../validations/products/validation');
+const baseURL = process.env.DB_URL;
 
 const Products = require("../models/products"); 
 const Image = require('../models/productImages');
 const { deleteImageFromProductsFolder } = require('../utils/products/productHelper')
 
-const {sequelize} = require('../bin/config/database')
+const {sequelize} = require('../bin/config/database');
+const { Op } = require('sequelize'); 
+
 const rootDirectory = path.join(__dirname, '../');
 
 
@@ -21,13 +25,24 @@ router.use(express.json())
 
 router.get("/", async (req, res) => {
     try {
-         const page = parseInt(req.query.page) || 1;
-         const limit = parseInt(req.query.size) || 10; 
-
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.size) || 10; 
         const offset = (page - 1) * limit;
+
+        const { search } = req.query;
+        const searchedValue = search
+        ? {
+            [Op.or]: [
+                { name: { [Op.iLike]: `%${search}%` } },
+                { code: { [Op.iLike]: `%${search}%` } },
+                { artikul: { [Op.iLike]: `%${search}%` } },
+            ],
+          }
+        : {};
 
         const products = await Products.findAndCountAll({
             include: [{ model: Image, as: 'images' }],
+            where: searchedValue,
             limit,
             offset,
         });
