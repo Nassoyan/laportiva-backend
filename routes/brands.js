@@ -57,7 +57,6 @@ router.post('/', validateProduct, checkValidationResult, async (req, res) => {
         const brandFile = Date.now() + '-' + req.files.image.name;
         const uploadPath = path.join('public/brandImages', brandFile);
         const imageUrl = baseURL + uploadPath
-        console.log(imageUrl);
 
         const brandName = req.body.name;
         
@@ -104,7 +103,6 @@ router.delete('/:id', async (req, res) => {
 
         await deleteImageFromBrandFolder(rootDirectory, brandImage)
 
-        console.log(brandImage, "brandImage");
 
         await Brands.destroy({
             where: {

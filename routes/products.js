@@ -30,8 +30,7 @@ router.get("/", async (req, res) => {
         const offset = (page - 1) * limit;
 
         const { search } = req.query;
-        const searchedValue = search
-        ? {
+        const searchedValue = search ? {
             [Op.or]: [
                 { name: { [Op.iLike]: `%${search}%` } },
                 { code: { [Op.iLike]: `%${search}%` } },
@@ -40,9 +39,16 @@ router.get("/", async (req, res) => {
           }
         : {};
 
+        const { brand_id } = req.query;
+
         const products = await Products.findAndCountAll({
             include: [{ model: Image, as: 'images' }],
-            where: searchedValue,
+            where: {
+                [Op.and]: [
+                    searchedValue,
+                    brand_id ? { brand_id: brand_id } : {}, // Add this condition if brand_id is provided
+                ],
+            },
             limit,
             offset,
         });
@@ -131,7 +137,6 @@ router.delete('/:id', async (req, res) => {
         if (!productImage) {
             return res.status(404).json({ error: 'Product not found' });
         }
-        console.log(productImage, "productImageeee");
         await deleteImageFromProductsFolder(rootDirectory, productImage)
 
         const product = await Products.findByPk(req.params.id); 
