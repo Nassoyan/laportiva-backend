@@ -12,11 +12,11 @@ module.exports = {
       },
       name: {
         type: Sequelize.STRING,
-        // allowNull: false
+        allowNull: false
       },
       image_url: {
         type: Sequelize.TEXT,
-        // allowNull: false
+        allowNull: false
       },
       createdAt: {
         type: Sequelize.DATE,

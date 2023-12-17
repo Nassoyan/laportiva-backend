@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const client = require("../bin/config/database");
+// const client = require("../bin/config/database");
 const path = require('path');
 const fs = require("fs");
 const fileUpload = require('express-fileupload');

@@ -8,6 +8,9 @@ const basename = path.basename(__filename);
 const env = process.env.NODE_ENV || 'development';
 const config = require(__dirname + '/../config/config.json')[env];
 const db = {};
+const Product = require('./product')
+const ProductCategory = require('./productCategory')
+const Category = require('./category')
 
 let sequelize;
 if (config.use_env_variable) {
@@ -41,3 +44,9 @@ db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 
 module.exports = db;
+
+module.exports = {
+  Product,
+  Category,
+  ProductCategory
+}

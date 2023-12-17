@@ -10,6 +10,7 @@ const cors = require('cors');
 
 const brandsRouter   = require('./routes/brands')
 const productsRouter = require('./routes/products')
+const categoriesRouter = require('./routes/category')
 
 
 var app = express();
@@ -24,5 +25,6 @@ app.use('/public',express.static(path.join(__dirname, 'public')));
 
 app.use('/brands', brandsRouter);
 app.use('/products', productsRouter);
+app.use('/category', categoriesRouter);
 
 module.exports = app;

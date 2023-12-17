@@ -1,6 +1,6 @@
 const { Sequelize,  DataTypes } = require('sequelize');
 const { sequelize } = require("../bin/config/database"); 
-const Product = require("./products")
+const Product = require("./product")
 
 const Brand = sequelize.define('brands', {
     id: {
@@ -18,10 +18,10 @@ const Brand = sequelize.define('brands', {
         allowNull: false,
     },
 }, {
-  timestamps: true, // Set timestamps to true to enable automatic createdAt and updatedAt columns
+  timestamps: true, 
 });
 
-Brand.hasMany(Product, { as: "products", foreignKey: "brand_id"} )
+Brand.hasMany(Product, { as: "product", foreignKey: "brand_id"} )
 
 
 module.exports = Brand;
