@@ -11,12 +11,14 @@ router.use(fileUpload());
 const { validateProduct, checkValidationResult } = require('../validations/products/validation');
 const baseURL = process.env.DB_URL;
 
-const Products = require("../models/products"); 
+const Product = require("../models/product"); 
 const Image = require('../models/productImages');
 const { deleteImageFromProductsFolder } = require('../utils/products/productHelper')
 
 const {sequelize} = require('../bin/config/database');
 const { Op } = require('sequelize'); 
+const  ProductCategory  = require("../models/productCategory");
+const Category = require("../models/category");
 
 const rootDirectory = path.join(__dirname, '../');
 
@@ -30,8 +32,7 @@ router.get("/", async (req, res) => {
         const offset = (page - 1) * limit;
 
         const { search } = req.query;
-        const searchedValue = search
-        ? {
+        const searchedValue = search ? {
             [Op.or]: [
                 { name: { [Op.iLike]: `%${search}%` } },
                 { code: { [Op.iLike]: `%${search}%` } },
@@ -40,9 +41,24 @@ router.get("/", async (req, res) => {
           }
         : {};
 
-        const products = await Products.findAndCountAll({
-            include: [{ model: Image, as: 'images' }],
-            where: searchedValue,
+        const { brand_id, categories } = req.query;
+
+        const categoryIds = categories? categories.split(",").map(item => parseInt(item)) : [];
+        console.log(`categoryIds -> ${categoryIds}`);
+
+        const products = await Product.findAndCountAll({
+            include: [{ model: Image, as: 'images' }, {
+                 model: ProductCategory,
+                 as: "items",
+                 where: categoryIds.length > 0 ? { id: { [Op.in]: categoryIds } } : {},
+                 required: categoryIds.length > 0
+                }],
+            where: {
+                [Op.and]: [
+                    searchedValue,
+                    brand_id ? { brand_id: brand_id } : {}, // Add this condition if brand_id is provided
+                ],
+            },
             limit,
             offset,
         });
@@ -64,7 +80,7 @@ router.get("/", async (req, res) => {
 router.get("/:id", async(req, res) => {
     try{
         const id = req.params.id
-        const product = await Products.findOne({
+        const product = await Product.findOne({
             where: {
                 id
             }
@@ -76,8 +92,6 @@ router.get("/:id", async(req, res) => {
 })
 
 router.post('/',validateProduct, checkValidationResult, async (req, res) => {
-
- 
 
     const t = await sequelize.transaction()
     
@@ -93,11 +107,23 @@ router.post('/',validateProduct, checkValidationResult, async (req, res) => {
         const uploadPath = path.join('public/productImages', productFile);
         const imageUrl = baseURL + uploadPath;
 
-        const { name, price, artikul, code, brand_id } = req.body;
+        const { name, price, artikul, code, brand_id, category_ids } = req.body;
         await req.files.product_images.mv(uploadPath);
 
-        const newProduct = await Products.create({ name, price, artikul, code, brand_id }, {transaction:t});
+        const newProduct = await Product.create({ name, price, artikul, code, brand_id }, {transaction:t});
         const newProductImage = await Image.create({ image_url: imageUrl, product_id: newProduct.id },{transaction:t});
+        console.log(req.body,"reqbody");
+        console.log(category_ids,"->category_ids");
+
+        const categoryIds = JSON.parse(category_ids);
+
+        // Handle category association
+        for (const categoryId of categoryIds) {
+            await ProductCategory.create({
+                product_id: newProduct.id,
+                category_id: categoryId
+            }, { transaction: t });
+        }
 
         await t.commit()
 
@@ -112,7 +138,7 @@ router.post('/',validateProduct, checkValidationResult, async (req, res) => {
 
 router.put('/:id', async (req, res) => {
     try {
-        const product = await Products.findByPk(req.params.id);
+        const product = await Product.findByPk(req.params.id);
         if (!product) {
             return res.status(404).json({ error: 'Product not found' });
         }
@@ -131,10 +157,9 @@ router.delete('/:id', async (req, res) => {
         if (!productImage) {
             return res.status(404).json({ error: 'Product not found' });
         }
-        console.log(productImage, "productImageeee");
         await deleteImageFromProductsFolder(rootDirectory, productImage)
 
-        const product = await Products.findByPk(req.params.id); 
+        const product = await Product.findByPk(req.params.id); 
         
         await product.destroy();
 
@@ -147,3 +172,8 @@ router.delete('/:id', async (req, res) => {
 
 
 module.exports = router
+
+//yndhanur petqa avelana filter bolor brandneri hamar apaki, keramika, metax, bambuk
+//paheluc wilmaxi vra petqa beri nayev byureghapaki, keramika, akacia, bambuk, metax, stone
+//avelanum e nayev search yst price-i
+//product id sort

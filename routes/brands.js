@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const client = require("../bin/config/database");
+// const client = require("../bin/config/database");
 const path = require('path');
 const fs = require("fs");
 const fileUpload = require('express-fileupload');
@@ -57,7 +57,6 @@ router.post('/', validateProduct, checkValidationResult, async (req, res) => {
         const brandFile = Date.now() + '-' + req.files.image.name;
         const uploadPath = path.join('public/brandImages', brandFile);
         const imageUrl = baseURL + uploadPath
-        console.log(imageUrl);
 
         const brandName = req.body.name;
         
@@ -104,7 +103,6 @@ router.delete('/:id', async (req, res) => {
 
         await deleteImageFromBrandFolder(rootDirectory, brandImage)
 
-        console.log(brandImage, "brandImage");
 
         await Brands.destroy({
             where: {

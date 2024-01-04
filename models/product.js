@@ -1,7 +1,10 @@
 // models/product.js
 const { Sequelize, DataTypes } = require('sequelize');
 const Image = require('./productImages');
-const { sequelize } = require('../bin/config/database')
+
+const { sequelize } = require('../bin/config/database');
+const Category = require('./category');
+const ProductCategory = require('./productCategory');
 
 const Product = sequelize.define('products', {
     id: {
@@ -33,9 +36,15 @@ const Product = sequelize.define('products', {
 }, {
     timestamps: true,
     underscored:true
-     // Set timestamps to true to enable automatic createdAt and updatedAt columns
   });
 
 Product.hasMany(Image, { as: 'images', foreignKey: "product_id", onDelete: 'cascade', hooks: true});
+
+Product.belongsToMany(ProductCategory, {
+    foreignKey: "product_id", 
+    otherKey: "category_id",   
+    through: 'product_categories', 
+    as: 'items'
+});
 
 module.exports = Product;
