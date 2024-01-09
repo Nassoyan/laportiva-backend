@@ -44,13 +44,12 @@ router.get("/", async (req, res) => {
         const { brand_id, categories } = req.query;
 
         const categoryIds = categories? categories.split(",").map(item => parseInt(item)) : [];
-        console.log(`categoryIds -> ${categoryIds}`);
 
         const products = await Product.findAndCountAll({
             include: [{ model: Image, as: 'images' }, {
                  model: ProductCategory,
                  as: "items",
-                 where: categoryIds.length > 0 ? { id: { [Op.in]: categoryIds } } : {},
+                 where: categoryIds.length > 0 ? { category_id: categoryIds[categoryIds.length-1] } : {},
                  required: categoryIds.length > 0
                 }],
             where: {
@@ -91,7 +90,7 @@ router.get("/:id", async(req, res) => {
     }
 })
 
-router.post('/',validateProduct, checkValidationResult, async (req, res) => {
+router.post('/', validateProduct, checkValidationResult, async (req, res) => {
 
     const t = await sequelize.transaction()
     
@@ -153,14 +152,13 @@ router.put('/:id', async (req, res) => {
 
 router.delete('/:id', async (req, res) => {
     try {
-        const productImage = await Image.findByPk(req.params.id); 
-        if (!productImage) {
+        const productImage = await Image.findByPk(req.params.id);
+        const product = await Product.findByPk(req.params.id);
+        if (!product) {
             return res.status(404).json({ error: 'Product not found' });
         }
         await deleteImageFromProductsFolder(rootDirectory, productImage)
-
-        const product = await Product.findByPk(req.params.id); 
-        
+        await ProductCategory.destroy({ where: { product_id: product.id } });
         await product.destroy();
 
         res.json({ message: 'Product deleted successfully' });

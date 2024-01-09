@@ -59,8 +59,8 @@ router.post('/', validateProduct, checkValidationResult, async (req, res) => {
         const imageUrl = baseURL + uploadPath
 
         const brandName = req.body.name;
-        
-        await req.files.image.mv(uploadPath); 
+
+        await req.files.image.mv(uploadPath);
 
         const newBrand = await Brands.create({ name: brandName, image_url: imageUrl });
         res.json(newBrand);

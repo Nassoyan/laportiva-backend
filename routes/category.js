@@ -51,7 +51,6 @@ router.get("/categories-children/:id", async (req, res) => {
 router.get('/sub-category/:id', async (req, res) => {
     try {
         const parentId = req.params.id;
-        console.log("id -> ", parentId);
         const categories = await Category.findAll( {
             where: {
                 parent_ids: {
@@ -60,7 +59,6 @@ router.get('/sub-category/:id', async (req, res) => {
             },
         }
         );
-        console.log(categories); 
         res.json(categories);
     } catch (error) {
         console.log(error.message);
@@ -71,9 +69,7 @@ router.get('/sub-category/:id', async (req, res) => {
 router.post('/relation/add', async (req, res) => {
     try {
         const data = req.body;
-        console.log(0);
         await processNestedObject(data, null);
-        console.log(4);
         return res.status(201).json({ status: "OK" })
     } catch (err) {
         console.error("Error -> ", err);
@@ -82,7 +78,6 @@ router.post('/relation/add', async (req, res) => {
 })
 
 async function processNestedObject(obj, parentId) {
-    console.log(1)
     if(!obj) {
         return;
     }
@@ -95,15 +90,12 @@ async function processNestedObject(obj, parentId) {
         })
         return;
     }
-    console.log(2)
 
     await CategoryRelation.create({
         category_id: obj.id,
         parent_category_id: parentId,
         child_category_id: obj.child ? obj.child.id : null
     })
-
-    console.log(3)
 
     // Recursive case: process the child object
     await processNestedObject(obj.child, obj.id);

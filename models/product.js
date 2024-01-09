@@ -40,10 +40,8 @@ const Product = sequelize.define('products', {
 
 Product.hasMany(Image, { as: 'images', foreignKey: "product_id", onDelete: 'cascade', hooks: true});
 
-Product.belongsToMany(ProductCategory, {
-    foreignKey: "product_id", 
-    otherKey: "category_id",   
-    through: 'product_categories', 
+Product.hasMany(ProductCategory, {
+    foreignKey: "product_id",
     as: 'items'
 });
 
