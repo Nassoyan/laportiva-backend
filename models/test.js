@@ -16,23 +16,6 @@ const obj = {
         } 
 
 
-let currentItem = null;
-
-for(let item of obj) {
-    console.log(item);
-    let parentId = currentItem;
-    let name = item.name;
-    let id = item.id;
-    let childCategoryId = item.child ? item.child.id : null;
-
-    console.info(`Database to be inserted: 
-      category_id -> ${id},
-      parent_category_id -> ${parentId},
-      child_category_id -> ${childCategoryId}`)
-
-    currentItem = item.id;
-}
-
 function processNestedObject(obj, parentId) {
    
     if (!obj || !obj.hasOwnProperty('child')) {

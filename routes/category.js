@@ -11,6 +11,7 @@ const CategoryRelation = require('../models/categoryRelation');
 const { sequelize } = require('../bin/config/database');
 const res = require('express/lib/response');
 const { QueryTypes } = require('sequelize');
+const { processCategoriesData } = require("../utils/categories/index")
 
 
 router.use(express.json());
@@ -27,9 +28,14 @@ router.get('/', async (req, res) => {
 
 router.get("/categories-parents", async (req, res) => {
     try {
+        if(!CategoryRelation) return []
         const data = await sequelize.query(`select distinct categories.* from category_relations
         inner join categories on categories.id = category_relations.category_id
         where category_relations.parent_category_id is null`, { type: QueryTypes.SELECT });
+
+        const result = await processCategoriesData(data);
+
+
         res.json(data);
     } catch (error) {
         console.error("something went wrong", error);
@@ -38,6 +44,7 @@ router.get("/categories-parents", async (req, res) => {
 
 router.get("/categories-children/:id", async (req, res) => {
     try {
+        if(!CategoryRelation) return []
         const id = req.params.id;
         const data = await sequelize.query(`select distinct categories.* from category_relations
         inner join categories on categories.id = category_relations.category_id

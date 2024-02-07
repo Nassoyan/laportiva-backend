@@ -3,7 +3,7 @@ const router = express.Router();
 const client = require("../bin/config/database");
 const path = require('path');
 require('dotenv').config()
-
+const { QueryTypes } = require('sequelize');
 
 const fs = require("fs");
 const fileUpload = require('express-fileupload');
@@ -28,13 +28,15 @@ router.use(express.json())
 router.get("/", async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.size) || 10; 
+        const limit = parseInt(req.query.size) || 9; 
         const offset = (page - 1) * limit;
 
-        const { search } = req.query;
+        const { search, order_id } = req.query;
         const searchedValue = search ? {
             [Op.or]: [
                 { name: { [Op.iLike]: `%${search}%` } },
+                { name_ru: { [Op.iLike]: `%${search}%` } },
+                { name_en: { [Op.iLike]: `%${search}%` } },
                 { code: { [Op.iLike]: `%${search}%` } },
                 { artikul: { [Op.iLike]: `%${search}%` } },
             ],
@@ -45,21 +47,45 @@ router.get("/", async (req, res) => {
 
         const categoryIds = categories? categories.split(",").map(item => parseInt(item)) : [];
 
+        const order = order_id === 'desc' ? [['id', 'DESC']] : [['id', 'ASC']];
+
+        let ids = [];
+        if(categoryIds.length) {
+            ids = await sequelize.query(`select product_id from product_categories where category_id in
+            (${categoryIds.join(',')})
+           group by product_id having count(distinct id) >= ${categoryIds.length}`, { type: QueryTypes.SELECT });
+
+            ids = ids.map(item => item.product_id);
+
+
+            if(!ids.length) {
+                return res.json({
+                    currentPage: page,
+                    totalPages: 0,
+                    products: [],
+                });
+            }
+
+        }
+
         const products = await Product.findAndCountAll({
+            distinct: true,
             include: [{ model: Image, as: 'images' }, {
                  model: ProductCategory,
-                 as: "items",
-                 where: categoryIds.length > 0 ? { category_id: categoryIds[categoryIds.length-1] } : {},
-                 required: categoryIds.length > 0
+                 as: "items"
                 }],
             where: {
                 [Op.and]: [
                     searchedValue,
                     brand_id ? { brand_id: brand_id } : {}, // Add this condition if brand_id is provided
                 ],
+                id: {
+                    [Op.or]: ids
+                }
             },
             limit,
             offset,
+            order
         });
 
         const totalPages = Math.ceil(products.count / limit);
@@ -82,7 +108,10 @@ router.get("/:id", async(req, res) => {
         const product = await Product.findOne({
             where: {
                 id
-            }
+            },
+            include: [
+                { model: Image, as: 'images' },
+            ],
         })
         res.json(product)
     } catch(err) {
@@ -106,13 +135,11 @@ router.post('/', validateProduct, checkValidationResult, async (req, res) => {
         const uploadPath = path.join('public/productImages', productFile);
         const imageUrl = baseURL + uploadPath;
 
-        const { name, price, artikul, code, brand_id, category_ids } = req.body;
+        const { name, price, name_ru, name_en, outer_carton, inner_carton, artikul, code, brand_id, category_ids } = req.body;
         await req.files.product_images.mv(uploadPath);
 
-        const newProduct = await Product.create({ name, price, artikul, code, brand_id }, {transaction:t});
+        const newProduct = await Product.create({ name, price, name_ru, name_en, outer_carton, inner_carton, artikul, code, brand_id }, {transaction:t});
         const newProductImage = await Image.create({ image_url: imageUrl, product_id: newProduct.id },{transaction:t});
-        console.log(req.body,"reqbody");
-        console.log(category_ids,"->category_ids");
 
         const categoryIds = JSON.parse(category_ids);
 
@@ -135,25 +162,82 @@ router.post('/', validateProduct, checkValidationResult, async (req, res) => {
 });
 
 
+
+
+
 router.put('/:id', async (req, res) => {
+    const t = await sequelize.transaction();
+
     try {
-        const product = await Product.findByPk(req.params.id);
+        const productId = req.params.id;
+        const product = await Product.findByPk(productId);
+
+        const productImage = await Image.findOne({
+            where: {
+                product_id: productId
+            }
+        });
+        console.log(productImage, "-> productImage");
+
         if (!product) {
             return res.status(404).json({ error: 'Product not found' });
         }
+
+        // Check if there's an existing image and a new image has been uploaded
+        if (productImage && req.files && req.files.product_images && req.files.product_images.name !== productImage.image_url) {
+            // Delete the existing image
+            await deleteImageFromProductsFolder(rootDirectory, productImage);
+        }
+
+        // Check if a new image has been uploaded
+        if (req.files?.product_images) {
+            const productFile = Date.now() + '-' + req.files.product_images.name;
+            const uploadPath = path.join('public/productImages', productFile);
+            const imageUrl = baseURL + uploadPath;
+            await req.files.product_images.mv(uploadPath);
+
+            // Check if product has an associated image
+            if (productImage) {
+                // Update the existing image
+                await productImage.update({ image_url: imageUrl }, { transaction: t });
+            } else {
+                // Create a new image
+                await Image.create({ image_url: imageUrl, product_id: product.id }, { transaction: t });
+            }
+        }
+
+        // Update the product
         const updatedProduct = await product.update(req.body);
-        res.json(updatedProduct);
+
+        // Commit the transaction
+        await t.commit();
+
+        // Combine the results into a single response object
+        const responseObj = { updatedProduct };
+
+        // Send the response
+        res.status(200).json(responseObj);
     } catch (error) {
-        console.error(error);
+        console.error('Error in PUT route:', error);
+        // Rollback the transaction in case of an error
+        await t.rollback();
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
 
 
+
+
 router.delete('/:id', async (req, res) => {
     try {
-        const productImage = await Image.findByPk(req.params.id);
+        const productId = req.params.id;
+        const productImage = await Image.findOne({
+            where: {
+                product_id: productId
+            }
+        });
         const product = await Product.findByPk(req.params.id);
+        console.log(productImage, "apaaaaa");
         if (!product) {
             return res.status(404).json({ error: 'Product not found' });
         }
@@ -170,8 +254,3 @@ router.delete('/:id', async (req, res) => {
 
 
 module.exports = router
-
-//yndhanur petqa avelana filter bolor brandneri hamar apaki, keramika, metax, bambuk
-//paheluc wilmaxi vra petqa beri nayev byureghapaki, keramika, akacia, bambuk, metax, stone
-//avelanum e nayev search yst price-i
-//product id sort

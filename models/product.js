@@ -1,10 +1,9 @@
 // models/product.js
 const { Sequelize, DataTypes } = require('sequelize');
 const Image = require('./productImages');
+const ProductCategory = require('./productCategory');
 
 const { sequelize } = require('../bin/config/database');
-const Category = require('./category');
-const ProductCategory = require('./productCategory');
 
 const Product = sequelize.define('products', {
     id: {
@@ -16,6 +15,22 @@ const Product = sequelize.define('products', {
     name: {
         type: Sequelize.STRING,
         allowNull: false,
+    },
+    name_ru: {
+        type: Sequelize.STRING,
+        allowNull: false
+      },
+    name_en: {
+        type: Sequelize.STRING,
+        allowNull: false
+      },
+    outer_carton: {
+      type: Sequelize.INTEGER,
+      allowNull: false
+    },
+    inner_carton: {
+      type: Sequelize.INTEGER,
+      allowNull: false
     },
     price: {
         type: Sequelize.INTEGER,

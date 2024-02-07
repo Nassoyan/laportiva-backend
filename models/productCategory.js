@@ -1,7 +1,5 @@
 const { Sequelize } = require('sequelize');
 const { sequelize } = require('../bin/config/database');
-const Product = require('./product');
-const Category = require('./Category');
 
 const ProductCategory = sequelize.define('product_categories', {
   id: {

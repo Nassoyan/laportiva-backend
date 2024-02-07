@@ -74,23 +74,45 @@ router.post('/', validateProduct, checkValidationResult, async (req, res) => {
 
 router.put('/:id', async (req, res) => {
     try {
-        const brandId = req.params.id;
-        const { name } = req.body;
+      const brandId = req.params.id;
+      const brand = await Brands.findByPk(brandId);
+  
+      if (!brand) {
+        return res.status(404).json({ error: 'Brand not found' });
+      }
+  
+      if (brand && req.files && req.files.image_url && req.files.image_url.name !== brand.image_url) {
+        await deleteImageFromBrandFolder(rootDirectory, brand);
+      }
 
-        const updatedBrand = await Brands.findByPk(brandId);
 
-        if (updatedBrand) {
-            updatedBrand.name = name;
-            await updatedBrand.save();
-            res.json(updatedBrand);
-        } else {
-            res.status(404).json({ error: 'Brand not found' });
-        }
+      if (req.files?.image_url) {
+        const brandFile = Date.now() + '-' + req.files.image_url.name;
+        const uploadPath = path.join('public/brandImages', brandFile);
+        const imageUrl = baseURL + uploadPath;
+  
+        // Move the uploaded file to the desired path
+        await req.files.image_url.mv(uploadPath);
+  
+        // Delete the old image if it exists
+  
+        // Update the brand with the new image URL
+        await brand.update({ image_url: imageUrl });
+      }
+  
+      // Update other properties of the brand
+      await brand.update(req.body);
+  
+      // Fetch the updated brand data
+      const updatedBrand = await Brands.findByPk(brandId);
+  
+      res.json(updatedBrand);
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Internal Server Error' });
+      console.error(error);
+      res.status(500).json({ error: 'Internal Server Error' });
     }
-});
+  });
+  
 
 
 

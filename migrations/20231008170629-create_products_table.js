@@ -14,6 +14,14 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false
       },
+      name_ru: {
+        type: Sequelize.STRING,
+        allowNull: false
+      },
+      name_en: {
+        type: Sequelize.STRING,
+        allowNull: false
+      },
       price: {
         type: Sequelize.INTEGER,
         allowNull: false
@@ -24,6 +32,14 @@ module.exports = {
       },
       code: {
         type: Sequelize.STRING,
+        allowNull: false
+      },
+      outer_carton: {
+        type: Sequelize.INTEGER,
+        allowNull: false
+      },
+      inner_carton: {
+        type: Sequelize.INTEGER,
         allowNull: false
       },
       brand_id: {
