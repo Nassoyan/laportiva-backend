@@ -48,6 +48,10 @@ const Product = sequelize.define('products', {
         type: Sequelize.INTEGER,
         allowNull: false
     },
+    country: {
+        type: Sequelize.STRING,
+        allowNull: false
+    },
 }, {
     timestamps: true,
     underscored:true

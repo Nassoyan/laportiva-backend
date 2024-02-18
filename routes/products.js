@@ -27,6 +27,7 @@ router.use(express.json())
 
 router.get("/", async (req, res) => {
     try {
+        console.log(Product.findAndCountAll(), "-> product findandcountall");
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.size) || 9; 
         const offset = (page - 1) * limit;
@@ -94,6 +95,7 @@ router.get("/", async (req, res) => {
             currentPage: page,
             totalPages: totalPages,
             products: products.rows,
+            count:products.count
         });
     } catch (error) {
         console.log(error.message);
@@ -119,7 +121,9 @@ router.get("/:id", async(req, res) => {
     }
 })
 
-router.post('/', validateProduct, checkValidationResult, async (req, res) => {
+router.post('/', 
+// validateProduct, checkValidationResult,
+ async (req, res) => {
 
     const t = await sequelize.transaction()
     
@@ -135,10 +139,10 @@ router.post('/', validateProduct, checkValidationResult, async (req, res) => {
         const uploadPath = path.join('public/productImages', productFile);
         const imageUrl = baseURL + uploadPath;
 
-        const { name, price, name_ru, name_en, outer_carton, inner_carton, artikul, code, brand_id, category_ids } = req.body;
+        const { name, price, name_ru, name_en, outer_carton, inner_carton, artikul, code, brand_id, country, category_ids } = req.body;
         await req.files.product_images.mv(uploadPath);
 
-        const newProduct = await Product.create({ name, price, name_ru, name_en, outer_carton, inner_carton, artikul, code, brand_id }, {transaction:t});
+        const newProduct = await Product.create({ name, price, name_ru, name_en, outer_carton, inner_carton, artikul, code, brand_id, country }, {transaction:t});
         const newProductImage = await Image.create({ image_url: imageUrl, product_id: newProduct.id },{transaction:t});
 
         const categoryIds = JSON.parse(category_ids);
@@ -177,7 +181,6 @@ router.put('/:id', async (req, res) => {
                 product_id: productId
             }
         });
-        console.log(productImage, "-> productImage");
 
         if (!product) {
             return res.status(404).json({ error: 'Product not found' });
@@ -237,7 +240,6 @@ router.delete('/:id', async (req, res) => {
             }
         });
         const product = await Product.findByPk(req.params.id);
-        console.log(productImage, "apaaaaa");
         if (!product) {
             return res.status(404).json({ error: 'Product not found' });
         }

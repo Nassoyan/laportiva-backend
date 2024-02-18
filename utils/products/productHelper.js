@@ -30,7 +30,7 @@ async function deleteImageFromProductsFolder(rootDirectory, product) {
         if (!product) {
               console.error('Product is null or undefined. Cannot delete image.');
           }
-        console.log(product,"mtaAAV");
+        console.log(product,"-> product-Image");
         const imagePath = product.image_url;
         const parsedUrl = new URL(imagePath);
         const decodedPathname = decodeURIComponent(parsedUrl.pathname); // Decode URL-encoded pathname

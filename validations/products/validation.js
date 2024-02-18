@@ -1,6 +1,9 @@
 const { body, validationResult } = require('express-validator');
 
 exports.validateProduct = [
+    // body('name')
+    // .notEmpty().matches(/^[a-zA-Z0-9.]*$/).withMessage('Name field is required')
+    // .escape(),
     body('name')
     .notEmpty().withMessage('Name field is required')
     .escape(),
