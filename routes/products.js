@@ -135,15 +135,44 @@ router.post('/',
             fs.mkdirSync(path.join('public', 'productImages'), { recursive: true });
         }
 
-        const productFile = Date.now() + '-' + req.files.product_images.name;
-        const uploadPath = path.join('public/productImages', productFile);
-        const imageUrl = baseURL + uploadPath;
+        console.log(req.files, "-> req.files for image");
+
+        let image_url;
+        let image_url2;
+        let uploadPath;
+        let uploadPath2;
+
+        if(req.files.product_images.length > 0) {
+            const productFile = Date.now() + '-' + req.files.product_images[0].name;
+            uploadPath = path.join('public/productImages', productFile);
+            image_url = baseURL + uploadPath;
+    
+            const productFile2 = Date.now() + '-' + req.files.product_images[1].name;
+            uploadPath2 = path.join('public/productImages', productFile2);
+            image_url2 = baseURL + uploadPath2;
+        } else {
+            const productFile = Date.now() + '-' + req.files.product_images.name;
+            uploadPath = path.join('public/productImages', productFile);
+            image_url = baseURL + uploadPath;
+        }
+
+
 
         const { name, price, name_ru, name_en, outer_carton, inner_carton, artikul, code, brand_id, country, category_ids } = req.body;
-        await req.files.product_images.mv(uploadPath);
+        if(req.files.product_images.length > 0) {
+            await req.files.product_images[0].mv(uploadPath);
+            await req.files.product_images[1].mv(uploadPath2);
+        } else {
+            await req.files.product_images.mv(uploadPath)
+        }
 
         const newProduct = await Product.create({ name, price, name_ru, name_en, outer_carton, inner_carton, artikul, code, brand_id, country }, {transaction:t});
-        const newProductImage = await Image.create({ image_url: imageUrl, product_id: newProduct.id },{transaction:t});
+        const newProductImage = await Image.create({ image_url: image_url, product_id: newProduct.id },{transaction:t});
+        let newProductImage2
+        if(req.files.product_images.length > 0) {
+             newProductImage2 = await Image.create({ image_url: image_url2, product_id: newProduct.id },{transaction:t});
+        }
+
 
         const categoryIds = JSON.parse(category_ids);
 
@@ -157,7 +186,7 @@ router.post('/',
 
         await t.commit()
 
-        res.json({ newProduct, newProductImage });
+        res.json({ newProduct, newProductImage, newProductImage2 });
     } catch (err) {
         await t.rollback()
         console.error("Error:", err);
@@ -234,7 +263,7 @@ router.put('/:id', async (req, res) => {
 router.delete('/:id', async (req, res) => {
     try {
         const productId = req.params.id;
-        const productImage = await Image.findOne({
+        const productImage = await Image.findAll({
             where: {
                 product_id: productId
             }
