@@ -11,8 +11,12 @@ const client = new Client({
 });
 
 client.connect(function(err) {
-  if (err) throw err;
-  console.log("Connected!");
+  if (err)  {
+    throw err;
+  } else {
+    console.log("Connected!");
+  }
+    
 });
 
 const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USER, process.env.DB_PASSWORD, {

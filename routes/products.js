@@ -1,6 +1,5 @@
 const express = require("express");
 const router = express.Router();
-const client = require("../bin/config/database");
 const path = require('path');
 require('dotenv').config()
 const { QueryTypes } = require('sequelize');
@@ -134,8 +133,6 @@ router.post('/',
         if (!fs.existsSync(path.join('public', 'productImages'))) {
             fs.mkdirSync(path.join('public', 'productImages'), { recursive: true });
         }
-
-        console.log(req.files, "-> req.files for image");
 
         let image_url;
         let image_url2;
